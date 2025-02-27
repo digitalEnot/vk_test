@@ -35,7 +35,10 @@ extension ReviewsViewModel {
     func getReviews() {
         guard state.shouldLoad else { return }
         state.shouldLoad = false
-        reviewsProvider.getReviews(offset: state.offset, completion: gotReviews)
+        DispatchQueue.global().async { [weak self] in
+            guard let self else { return }
+            reviewsProvider.getReviews(offset: state.offset, completion: gotReviews)
+        }
     }
 
 }
@@ -123,9 +126,7 @@ extension ReviewsViewModel: UITableViewDelegate {
         targetContentOffset: UnsafeMutablePointer<CGPoint>
     ) {
         if shouldLoadNextPage(scrollView: scrollView, targetOffsetY: targetContentOffset.pointee.y) {
-            DispatchQueue.global().async { [weak self] in
-                self?.getReviews()
-            }
+            getReviews()
         }
     }
 
